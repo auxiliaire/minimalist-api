@@ -6,7 +6,6 @@ use axum::{
     routing::{get, post},
     Extension, Router,
 };
-use mime;
 use serde::{Deserialize, Serialize};
 use serde_json::json;
 use sqlx::{sqlite::SqlitePoolOptions, SqlitePool};
