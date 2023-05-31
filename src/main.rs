@@ -2,7 +2,7 @@ use anyhow::Context;
 use axum::{
     extract::{Json, Path},
     http::{header, HeaderValue, StatusCode},
-    response::{self, IntoResponse},
+    response::IntoResponse,
     routing::{get, post},
     Extension, Router,
 };
@@ -45,12 +45,34 @@ async fn get_tickets(pool: Extension<SqlitePool>, Path(id): Path<i64>) -> impl I
     }
 }
 
-async fn post_tickets(Json(ticket): Json<Ticket>) -> response::Json<Ticket> {
+async fn post_tickets(
+    pool: Extension<SqlitePool>,
+    Json(ticket): Json<Ticket>,
+) -> impl IntoResponse {
     println!("Ticket({}): '{}'", ticket.id, ticket.title);
-    response::Json(Ticket {
-        id: ticket.id,
-        title: String::from(ticket.title.as_str()),
-    })
+    let result = sqlx::query!("INSERT INTO tickets (title) VALUES ($1)", ticket.title)
+        .execute(&*pool)
+        .await;
+    match result {
+        Ok(r) => Json(Ticket {
+            id: r.last_insert_rowid(),
+            title: String::from(ticket.title.as_str()),
+        })
+        .into_response(),
+        Err(e) => (
+            StatusCode::BAD_REQUEST,
+            [(
+                header::CONTENT_TYPE,
+                HeaderValue::from_static(mime::APPLICATION_JSON.as_ref()),
+            )],
+            json!(JsonError {
+                code: StatusCode::BAD_REQUEST.to_string(),
+                message: e.to_string(),
+            })
+            .to_string(),
+        )
+            .into_response(),
+    }
 }
 
 #[tokio::main]
