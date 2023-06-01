@@ -1,7 +1,7 @@
 mod api;
 
 use anyhow::Context;
-use sqlx::{sqlite::SqlitePoolOptions};
+use sqlx::sqlite::SqlitePoolOptions;
 
 #[tokio::main]
 async fn main() {
@@ -13,8 +13,6 @@ async fn main() {
         .connect(&database_url)
         .await
         .unwrap();
-    
-    api::serve(pool)
-        .await
-        .unwrap();
+
+    api::serve(pool).await.unwrap();
 }

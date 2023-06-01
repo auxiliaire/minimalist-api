@@ -1,13 +1,12 @@
 use axum::{
-    extract::{Json, rejection::JsonRejection, Path},
+    extract::{rejection::JsonRejection, Json, Path},
     http::StatusCode,
     response::IntoResponse,
     routing::{get, post},
-    Extension,
-    Router
+    Extension, Router,
 };
-use sqlx::SqlitePool;
 use serde::{Deserialize, Serialize};
+use sqlx::SqlitePool;
 
 use crate::api::error;
 
@@ -49,9 +48,11 @@ async fn post_tickets(
                     title: String::from(ticket.title.as_str()),
                 })
                 .into_response(),
-                Err(e) => error::to_uniform_response(StatusCode::BAD_REQUEST, e.to_string()).into_response(),
-            }        
-        },
-        Err(e) => error::to_uniform_response(StatusCode::UNPROCESSABLE_ENTITY, e.to_string()).into_response(),
+                Err(e) => error::to_uniform_response(StatusCode::BAD_REQUEST, e.to_string())
+                    .into_response(),
+            }
+        }
+        Err(e) => error::to_uniform_response(StatusCode::UNPROCESSABLE_ENTITY, e.to_string())
+            .into_response(),
     }
 }

@@ -25,4 +25,3 @@ pub fn to_uniform_response(code: StatusCode, message: String) -> impl IntoRespon
         .to_string(),
     )
 }
-
