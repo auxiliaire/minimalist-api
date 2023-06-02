@@ -1,6 +1,8 @@
 use anyhow::Context;
 use axum::{Extension, Router};
+use http::Method;
 use sqlx::SqlitePool;
+use tower_http::cors::{Any, CorsLayer};
 
 pub mod error;
 pub mod tickets;
@@ -13,5 +15,12 @@ pub async fn serve(db: SqlitePool) -> anyhow::Result<()> {
 }
 
 pub fn router(db: SqlitePool) -> Router {
-    Router::new().merge(tickets::router()).layer(Extension(db))
+    let cors = CorsLayer::new()
+        .allow_methods([Method::GET, Method::POST])
+        .allow_origin(Any);
+
+    Router::new()
+        .merge(tickets::router())
+        .layer(Extension(db))
+        .layer(cors)
 }

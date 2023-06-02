@@ -1,5 +1,5 @@
 use axum::{
-    extract::{rejection::JsonRejection, Json, Path},
+    extract::{rejection::JsonRejection, rejection::PathRejection, Json, Path},
     http::StatusCode,
     response::IntoResponse,
     routing::{get, post},
@@ -22,13 +22,25 @@ pub fn router() -> Router {
         .route("/tickets", post(post_tickets))
 }
 
-async fn get_tickets(pool: Extension<SqlitePool>, Path(id): Path<i64>) -> impl IntoResponse {
-    let result = sqlx::query_as!(Ticket, "SELECT * FROM tickets WHERE id = $1", id)
-        .fetch_one(&*pool)
-        .await;
-    match result {
-        Ok(ticket) => Json(ticket).into_response(),
-        Err(e) => error::to_uniform_response(StatusCode::NOT_FOUND, e.to_string()).into_response(),
+async fn get_tickets(
+    pool: Extension<SqlitePool>,
+    param: Result<Path<i64>, PathRejection>,
+) -> impl IntoResponse {
+    match param {
+        Ok(path) => {
+            let result = sqlx::query_as!(Ticket, "SELECT * FROM tickets WHERE id = $1", path.0)
+                .fetch_one(&*pool)
+                .await;
+            match result {
+                Ok(ticket) => Json(ticket).into_response(),
+                Err(e) => {
+                    error::to_uniform_response(StatusCode::NOT_FOUND, e.to_string()).into_response()
+                }
+            }
+        }
+        Err(e) => {
+            error::to_uniform_response(StatusCode::BAD_REQUEST, e.to_string()).into_response()
+        }
     }
 }
 
