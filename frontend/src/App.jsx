@@ -3,6 +3,7 @@ import TicketView from "./components/TicketView";
 import { A, Navigate, Outlet, Route, Routes, useMatch, useNavigate } from "@solidjs/router";
 import TicketCreate from "./components/TicketCreate";
 import DisappearingToast, { showToast } from "./components/DisappearingToast";
+import { getTicket, createTicket } from "./api";
 
 const App = () => {
     const [id, setId] = createSignal(0);
@@ -12,37 +13,36 @@ const App = () => {
     const isTicketView = useMatch(() => '/tickets');
     const navigate = useNavigate();
     const useResult = (result) => {
-         if (result.hasOwnProperty('id') && result.hasOwnProperty('title')) {
+         if (result && result.hasOwnProperty('id') && result.hasOwnProperty('title')) {
             if (!isTicketView()) {
                 navigate('/tickets', {replace: true});
                 showToast({code: "OK", message: "Saved successfully."}, success, setSuccess);
             }
             setError();
             setTicket(result);
-        } else if (result.hasOwnProperty('code') && result.hasOwnProperty('message')) {
+        } else if (result && result.hasOwnProperty('code') && result.hasOwnProperty('message')) {
             showToast(result, error, setError);
+            setTicket({});
         } else {
             console.log(result);
             showToast({code: "Unknown", message: "Failed to process the response."}, error, setError);
+            setTicket({});
         }
     };
-    // TODO: retreive endpoint from configuration
-    const endpoint = 'http://localhost:8000/tickets';
-    const getTicket = () =>
-        fetch(endpoint + '/' + id(), { method: "GET", headers: { "Accept": "application/json" }})
-            .then(r => r.json())
-            .then(useResult)
-            .catch(err => console.log(err));
-    const createTicket = (body) =>
-        fetch(endpoint, { method: "POST", headers: { "Content-Type": "application/json" }, body})
-            .then(r => r.json())
-            .then(useResult)
-            .catch(err => console.log(err));
     const updateTicket = (id) => {
         setId(id);
-        getTicket();
+        if (id) {
+            getTicket(id)
+                .then(useResult);
+        } else {
+            setTicket({});
+        }
     }
-    const TicketData = ({params, location, navigate, data}) => {
+    const persistTicket = (jsonString) => {
+        createTicket(jsonString)
+            .then(useResult);
+    };
+    const TicketData = (_) => {
         return ticket;
     }
     
@@ -72,7 +72,7 @@ const App = () => {
             <Routes>
                 <Route path="/" element={<Navigate href="/tickets"/>}/>
                 <Route path="/tickets" component={TicketView} data={TicketData}/>
-                <Route path="/tickets/new" component={TicketCreate} data={() => createTicket}/>
+                <Route path="/tickets/new" component={TicketCreate} data={() => persistTicket}/>
             </Routes>
         </div>
     );

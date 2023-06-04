@@ -9,7 +9,9 @@ export function showToast(obj, getter, setter) {
     if (interval) clearInterval(interval);
     interval = setInterval(() => {
         const s = getter();
-        setter({code: s.code, message: s.message, durationLeft: s.durationLeft - 100});
+        if (s) {
+            setter({code: s.code, message: s.message, durationLeft: s.durationLeft - 100});
+        }
     }, 100);
     timeout = setTimeout(() => {
         clearInterval(interval);
