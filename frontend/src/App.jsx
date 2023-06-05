@@ -3,7 +3,7 @@ import TicketView from "./components/TicketView";
 import { A, Navigate, Outlet, Route, Routes, useMatch, useNavigate } from "@solidjs/router";
 import TicketCreate from "./components/TicketCreate";
 import DisappearingToast, { showToast } from "./components/DisappearingToast";
-import { getTicket, createTicket } from "./api";
+import api from "./api";
 
 const App = () => {
     const [id, setId] = createSignal(0);
@@ -12,15 +12,19 @@ const App = () => {
     const [success, setSuccess] = createSignal();
     const isTicketView = useMatch(() => '/tickets');
     const navigate = useNavigate();
+
+    const isTicket = (result) => result && result.hasOwnProperty('id') && result.hasOwnProperty('title');
+    const isError = (result) => result && result.hasOwnProperty('code') && result.hasOwnProperty('message');
+    
     const useResult = (result) => {
-         if (result && result.hasOwnProperty('id') && result.hasOwnProperty('title')) {
+         if (isTicket(result)) {
             if (!isTicketView()) {
                 navigate('/tickets', {replace: true});
                 showToast({code: "OK", message: "Saved successfully."}, success, setSuccess);
             }
             setError();
             setTicket(result);
-        } else if (result && result.hasOwnProperty('code') && result.hasOwnProperty('message')) {
+        } else if (isError(result)) {
             showToast(result, error, setError);
             setTicket({});
         } else {
@@ -29,17 +33,17 @@ const App = () => {
             setTicket({});
         }
     };
-    const updateTicket = (id) => {
+    const updateTicketModel = (id) => {
         setId(id);
         if (id) {
-            getTicket(id)
+            api.getTicket(id)
                 .then(useResult);
         } else {
             setTicket({});
         }
     }
-    const persistTicket = (jsonString) => {
-        createTicket(jsonString)
+    const saveTicket = (ticketObj) => {
+        api.postTicket(ticketObj)
             .then(useResult);
     };
     const TicketData = (_) => {
@@ -58,7 +62,7 @@ const App = () => {
                 </div>
                 <div class="navbar-center">
                     <Show when={isTicketView()}>
-                        <input type="text" onInput={(e) => updateTicket(e.target.value)} placeholder="Enter Id" class="input input-bordered input-sm w-full max-w-xs" />                
+                        <input type="text" onInput={(e) => updateTicketModel(e.target.value)} placeholder="Enter Id" class="input input-bordered input-sm w-full max-w-xs" />                
                     </Show>
                 </div>
             </div>
@@ -72,7 +76,7 @@ const App = () => {
             <Routes>
                 <Route path="/" element={<Navigate href="/tickets"/>}/>
                 <Route path="/tickets" component={TicketView} data={TicketData}/>
-                <Route path="/tickets/new" component={TicketCreate} data={() => persistTicket}/>
+                <Route path="/tickets/new" component={TicketCreate} data={() => saveTicket}/>
             </Routes>
         </div>
     );

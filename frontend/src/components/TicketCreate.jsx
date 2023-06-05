@@ -10,16 +10,16 @@ const ErrorLabel = (props) => {
 };
 
 const TicketCreate = () => {
-    const createTicket = useRouteData();
+    const saveTicket = useRouteData();
     const { validate, formSubmit, errors } = useForm({
         errorClass: "input-error"
     });
     const submitTicket = (form) => {
         console.log('Submitting...');
         const formEntries = new FormData(form).entries();
-        const json = Object.assign(...Array.from(formEntries, ([x,y]) => ({[x]:y})));
-        json.id = 0;
-        createTicket(JSON.stringify(json));
+        const ticket = Object.assign(...Array.from(formEntries, ([x,y]) => ({[x]:y})));
+        ticket.id = 0;
+        saveTicket(ticket);
     };
 
     return (
