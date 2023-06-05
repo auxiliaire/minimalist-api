@@ -11,10 +11,6 @@ jobs:
 
         runs-on: ubuntu-latest
 
-        defaults:
-            run:
-                working-directory: frontend
-
         strategy:
             matrix:
                 node-version: [14.x, 16.x, 18.x]
@@ -28,8 +24,11 @@ jobs:
                 cache: 'npm'
                 cache-dependency-path: '**/package-lock.json'
             - name: Clean install
+              working-directory: frontend
               run: npm ci
             - name: Build
+              working-directory: frontend
               run: npm run build --if-present
             - name: Test
+              working-directory: frontend
               run: npm test
