@@ -14,5 +14,7 @@ async fn main() {
         .await
         .unwrap();
 
+    sqlx::migrate!().run(&pool).await.unwrap();
+
     api::serve(pool).await.unwrap();
 }
