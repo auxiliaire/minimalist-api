@@ -4,6 +4,7 @@
 
 ![Rust Security Audit](https://github.com/auxiliaire/minimalist-api/actions/workflows/audit.yml/badge.svg)
 ![Rust Build](https://github.com/auxiliaire/minimalist-api/actions/workflows/general.yml/badge.svg)
+![JavaScript Build](https://github.com/auxiliaire/minimalist-api/actions/workflows/npm.yml/badge.svg)
 
 This is an integrated Rust backend and Solid JS frontend example.
 
