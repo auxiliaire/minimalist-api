@@ -6,11 +6,6 @@ on:
     pull_request:
         branches: [ master ]
 
-defaults:
-    run:
-        shell: bash
-        working-directory: frontend
-
 jobs:
     build:
 
@@ -27,6 +22,12 @@ jobs:
           with:
             node-version: ${{ matrix.node-version }}
             cache: 'npm'
-        - run: npm ci
-        - run: npm run build --if-present
-        - run: npm test
+        - name: Clean install
+          working-directory: frontend
+          run: npm ci
+        - name: Build
+          working-directory: frontend
+          run: npm run build --if-present
+        - name: Test
+          working-directory: frontend
+          run: npm test
