@@ -2,14 +2,17 @@ use anyhow::Context;
 use axum::{Extension, Router};
 use http::Method;
 use sqlx::SqlitePool;
+use tokio::net::TcpListener;
 use tower_http::cors::{Any, CorsLayer};
 
 pub mod error;
 pub mod tickets;
 
 pub async fn serve(db: SqlitePool) -> anyhow::Result<()> {
-    axum::Server::bind(&"0.0.0.0:8000".parse().unwrap())
-        .serve(router(db).into_make_service())
+    let listener = TcpListener::bind("0.0.0.0:8000")
+        .await
+        .context("failed to bind listener");
+    axum::serve(listener.unwrap(), router(db))
         .await
         .context("failed to serve API")
 }

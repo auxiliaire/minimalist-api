@@ -18,7 +18,7 @@ pub struct Ticket {
 
 pub fn router() -> Router {
     Router::new()
-        .route("/tickets/:id", get(get_tickets))
+        .route("/tickets/{id}", get(get_tickets))
         .route("/tickets", post(post_tickets))
 }
 
